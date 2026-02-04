@@ -1,5 +1,5 @@
 import express from "express";
-import { hashPassword, comparePassword, signToken } from "../auth/auth.utils.js";
+import { comparePassword, signToken } from "../auth/auth.utils.js";
 import { pool } from "../db.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 
@@ -7,6 +7,7 @@ const router = express.Router();
 
 /**
  * LOGIN
+ * POST /auth/login
  */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -37,12 +38,17 @@ router.post("/login", async (req, res) => {
 
 /**
  * WHO AM I
+ * GET /auth/me
  */
 router.get("/me", requireAuth, async (req, res) => {
   const { rows } = await pool.query(
     `SELECT id, email, role FROM clinic_users WHERE id = $1`,
     [req.userId]
   );
+
+  if (rows.length === 0) {
+    return res.status(401).json({ error: "User not found" });
+  }
 
   res.json({
     user: rows[0],
