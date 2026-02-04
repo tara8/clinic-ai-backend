@@ -16,8 +16,21 @@ const app = express();
 /* =========================
    CORE MIDDLEWARE
 ========================= */
-app.use(cors({ origin: "*"}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://clinic-ai-frontend-livid.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+app.options("*", cors());
 app.use(express.json());
+
 
 /* =========================
    HEALTH CHECK
