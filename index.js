@@ -21,15 +21,15 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://clinic-ai-frontend-livid.vercel.app",
+      "https://clinic-ai-frontend-heau921gs-taras-projects-4da3b2f6.vercel.app"
     ],
     methods: ["GET", "POST", "PUT", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
 
-app.options("*", cors());
 app.use(express.json());
+
 
 
 /* =========================
