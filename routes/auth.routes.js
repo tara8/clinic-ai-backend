@@ -1,7 +1,7 @@
 import express from "express";
 import { comparePassword, signToken } from "../auth/auth.utils.js";
 import { pool } from "../db.js";
-import requireAuth from "../middleware/requireAuth.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
