@@ -18,20 +18,13 @@ const app = express();
 ========================= */
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://clinic-ai-frontend-livid.vercel.app",
-      "https://clinic-ai-frontend-heau921gs-taras-projects-4da3b2f6.vercel.app"
-    ],
+    origin: true, // ← allow requesting origin dynamically
     methods: ["GET", "POST", "PUT", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
-
-
-
 /* =========================
    HEALTH CHECK
 ========================= */
