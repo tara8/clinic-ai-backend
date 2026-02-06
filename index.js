@@ -16,15 +16,30 @@ const app = express();
 /* =========================
    CORE MIDDLEWARE
 ========================= */
+
+// ✅ REQUIRED for JSON bodies
+app.use(express.json());
+
+const allowedOrigins = [
+  "https://app.voica.ca"
+];
+
 app.use(
   cors({
-    origin: true, // ← allow requesting origin dynamically
-    methods: ["GET", "POST", "PUT", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: function (origin, callback) {
+      // allow server-to-server, health checks, Render pings
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true
   })
 );
 
-app.use(express.json());
 /* =========================
    HEALTH CHECK
 ========================= */
@@ -83,6 +98,19 @@ app.put("/v1/dashboard/clinic", requireAuth, async (req, res) => {
    ANALYTICS (JWT ONLY)
 ========================= */
 app.use("/v1/analytics", analyticsRoutes);
+
+/* =========================
+   GLOBAL ERROR HANDLER (IMPORTANT)
+========================= */
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.message);
+
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ error: "CORS blocked" });
+  }
+
+  res.status(500).json({ error: "Internal server error" });
+});
 
 /* =========================
    SERVER START
