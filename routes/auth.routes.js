@@ -5,7 +5,6 @@ import { requireAuth } from "../middleware/requireAuth.js";
 
 const router = express.Router();
 
-
 /**
  * LOGIN
  * POST /auth/login
@@ -28,11 +27,15 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  const token = signToken({
-    userId: user.id,
-    clinicId: user.clinic_id,
-    role: user.role,
-  });
+  // ✅ JWT with expiration (15 minutes)
+  const token = signToken(
+    {
+      userId: user.id,
+      clinicId: user.clinic_id,
+      role: user.role,
+    },
+    { expiresIn: "15m" }
+  );
 
   res.json({ token });
 });
