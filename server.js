@@ -1,24 +1,28 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
+
 import analyticsRoutes from "./routes/analytics.routes.js";
+import clinicPromptRoutes from "./routes/clinicPrompt.routes.js";
 
 const app = express();
 
-// ----------------------
-// 🔐 Global Rate Limiter
-// ----------------------
+// 🔐 Rate limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,                // limit each IP
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Apply BEFORE all routes
 app.use(limiter);
 
-// ----------------------
-// Routes
-// ----------------------
+// ✅ THIS LINE IS CRITICAL
+app.use("/v1", clinicPromptRoutes);
+
+// other routes
 app.use("/v1/analytics", analyticsRoutes);
-// ... other routes
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
