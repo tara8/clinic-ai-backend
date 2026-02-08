@@ -5,6 +5,8 @@ const router = express.Router();
 
 router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
   try {
+    console.log("📞 VAPI phoneNumberId:", req.params.phoneNumberId);
+
     const apiKey = req.headers["x-api-key"];
 
     if (apiKey !== process.env.VAPI_API_KEY) {
@@ -33,5 +35,6 @@ router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
     res.status(500).json({ system_prompt: null });
   }
 });
+
 
 export default router;
