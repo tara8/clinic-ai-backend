@@ -3,7 +3,7 @@ import { pool } from "../db.js";
 
 const router = express.Router();
 
-router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
+router.post("/clinics/by-phone/prompt", async (req, res) => {
   try {
     const apiKey = req.headers["x-api-key"];
     if (apiKey !== process.env.VAPI_API_KEY) {
@@ -12,7 +12,13 @@ router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
       });
     }
 
-    const { phoneNumberId } = req.params;
+    const { phoneNumberId } = req.body;
+
+    if (!phoneNumberId) {
+      return res.status(200).json({
+        system_prompt: "You are a polite clinic receptionist. Please escalate the call."
+      });
+    }
 
     const { rows } = await pool.query(
       `
@@ -40,7 +46,5 @@ router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
     });
   }
 });
-
-
 
 export default router;
