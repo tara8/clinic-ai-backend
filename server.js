@@ -6,6 +6,12 @@ import clinicPromptRoutes from "./routes/clinicPrompt.routes.js";
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log("🌐 Incoming request:", req.method, req.originalUrl);
+  next();
+});
+
+
 // 🔐 Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
