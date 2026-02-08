@@ -26,6 +26,7 @@ app.use(limiter);
 
 // Routes
 app.use("/v1", clinicPromptRoutes);
+app.use("/v1", clinicPrompt.dashboard.routes.js);
 app.use("/v1/analytics", analyticsRoutes);
 
 const PORT = process.env.PORT || 3000;
