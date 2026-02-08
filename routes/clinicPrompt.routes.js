@@ -5,12 +5,11 @@ const router = express.Router();
 
 router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
   try {
-    console.log("📞 VAPI phoneNumberId:", req.params.phoneNumberId);
-
     const apiKey = req.headers["x-api-key"];
-
     if (apiKey !== process.env.VAPI_API_KEY) {
-      return res.status(401).json({ system_prompt: null });
+      return res.status(200).json({
+        system_prompt: "You are a polite clinic receptionist. Please escalate the call."
+      });
     }
 
     const { phoneNumberId } = req.params;
@@ -24,17 +23,24 @@ router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
       [phoneNumberId]
     );
 
-    if (rows.length === 0) {
-      return res.status(404).json({ system_prompt: null });
+    if (rows.length === 0 || !rows[0].system_prompt) {
+      return res.status(200).json({
+        system_prompt: "You are a polite clinic receptionist. Please escalate the call."
+      });
     }
 
-    res.json({ system_prompt: rows[0].system_prompt });
+    res.status(200).json({
+      system_prompt: rows[0].system_prompt
+    });
 
   } catch (err) {
     console.error("❌ Prompt fetch error:", err.message);
-    res.status(500).json({ system_prompt: null });
+    res.status(200).json({
+      system_prompt: "You are a polite clinic receptionist. Please escalate the call."
+    });
   }
 });
+
 
 
 export default router;
