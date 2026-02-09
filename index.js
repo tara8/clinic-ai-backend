@@ -5,9 +5,12 @@ import twilio from "twilio";
 
 import { pool } from "./db.js";
 import { requireAuth } from "./middleware/requireAuth.js";
+import { sendBookingSms } from "./utils/sendSms.js";
+
 
 import authRoutes from "./routes/auth.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+
 
 dotenv.config();
 
@@ -51,6 +54,101 @@ app.get("/health", (req, res) => {
    AUTH ROUTES (JWT)
 ========================= */
 app.use("/auth", authRoutes);
+/* =========================
+   Create the webhook endpoint
+========================= */
+
+app.post("/vapi/webhook", async (req, res) => {
+  try {
+    // 🔐 Verify VAPI webhook secret
+    const signature = req.headers["x-vapi-signature"];
+    if (signature !== process.env.VAPI_WEBHOOK_SECRET) {
+      return res.status(401).json({ ok: false });
+    }
+
+    const event = req.body;
+
+    // We only care about call-ended events
+    if (event.type !== "call.ended") {
+      return res.json({ ok: true });
+    }
+
+    const {
+      phoneNumberId,
+      customer,
+      analysis,
+    } = event.call || {};
+
+    const customerPhone = customer?.number;
+    const bookingIntent = analysis?.intent === "booking";
+
+    // Only send SMS if booking intent happened
+    if (!customerPhone || !bookingIntent) {
+      return res.json({ ok: true });
+    }
+
+    // Find clinic by VAPI phone number
+    const { rows } = await pool.query(
+      `
+      SELECT booking_link
+      FROM clinic_config
+      WHERE vapi_phone_number_id = $1
+      `,
+      [phoneNumberId]
+    );
+
+    const bookingLink = rows[0]?.booking_link;
+    if (!bookingLink) {
+      return res.json({ ok: true });
+    }
+
+    await sendBookingSms({
+      to: customerPhone,
+      bookingLink,
+      clinicName: "Your Clinic",
+    });
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error("❌ VAPI webhook error:", err.message);
+    res.json({ ok: true }); // never fail webhook
+  }
+});
+
+/* =========================
+   endpoint to trigger SMS (JWT-protected)
+========================= */
+app.post("/v1/sms/booking-link", requireAuth, async (req, res) => {
+  const { phone } = req.body;
+
+  if (!phone) {
+    return res.status(400).json({ error: "Phone number required" });
+  }
+
+  const { rows } = await pool.query(
+    `
+    SELECT booking_link
+    FROM clinic_config
+    WHERE clinic_id = $1
+    `,
+    [req.clinicId]
+  );
+
+  const bookingLink = rows[0]?.booking_link;
+
+  if (!bookingLink) {
+    return res.status(400).json({ error: "No booking link set" });
+  }
+
+  await sendBookingSms({
+    to: phone,
+    bookingLink,
+    clinicName: "Your Clinic",
+  });
+
+  res.json({ success: true });
+});
 
 /* =========================
    DASHBOARD (JWT ONLY)
