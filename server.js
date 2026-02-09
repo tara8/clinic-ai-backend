@@ -11,6 +11,15 @@ const app = express();
 // ✅ REQUIRED: parse JSON bodies (for VAPI POST tool calls)
 app.use(express.json());
 
+app.post("/vapi/webhook", (req, res) => {
+  // 🔍 TEMP: log event type for verification
+  console.log("📞 VAPI event type:", req.body?.type);
+
+  // Always acknowledge webhook
+  res.json({ ok: true });
+});
+
+
 app.use((req, res, next) => {
   console.log("🌐 Incoming request:", req.method, req.originalUrl);
   next();
