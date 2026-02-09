@@ -13,23 +13,30 @@ app.use(express.json());
 
 //webhook route
 app.post("/vapi/webhook", (req, res) => {
-  const payload = req.body;
+  const msg = req.body?.message;
 
-  // Normalize payload to an array
-  const events = Array.isArray(payload) ? payload : [payload];
+  const eventType = msg?.type;
 
-  for (const event of events) {
-    const eventType = event?.type;
-    console.log("📞 VAPI event type:", eventType);
+  console.log("📞 VAPI event type:", eventType);
 
-    if (eventType === "call.ended") {
-      console.log("✅ Call ended event received");
-      // 🔜 SMS trigger logic will go here
-    }
+  // This is the ONLY event you want
+  if (eventType !== "end-of-call-report") {
+    return res.json({ ok: true });
   }
+
+  console.log("✅ End-of-call report received");
+
+  // Useful data (you will need this next)
+  const transcript = msg?.transcript;
+  const call = msg?.call;
+  const assistantId = call?.assistantId;
+  const endedReason = msg?.endedReason;
+
+  // 🔜 SMS logic will be added here next
 
   res.json({ ok: true });
 });
+
 
 
 
