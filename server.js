@@ -11,11 +11,18 @@ const app = express();
 // ✅ REQUIRED: parse JSON bodies (for VAPI POST tool calls)
 app.use(express.json());
 
-//test
-
+//webhook route
 app.post("/vapi/webhook", (req, res) => {
-  console.log("📦 RAW BODY:", req.body);
-  console.log("📦 HEADERS:", req.headers["content-type"]);
+  const event = req.body;
+
+  console.log("📞 VAPI event type:", event?.type);
+
+  if (event?.type !== "call.ended") {
+    return res.json({ ok: true });
+  }
+
+  // later: SMS trigger logic goes here
+
   res.json({ ok: true });
 });
 
