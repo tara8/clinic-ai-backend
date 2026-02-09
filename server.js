@@ -11,13 +11,14 @@ const app = express();
 // ✅ REQUIRED: parse JSON bodies (for VAPI POST tool calls)
 app.use(express.json());
 
-app.post("/vapi/webhook", (req, res) => {
-  // 🔍 TEMP: log event type for verification
-  console.log("📞 VAPI event type:", req.body?.type);
+//test
 
-  // Always acknowledge webhook
+app.post("/vapi/webhook", (req, res) => {
+  console.log("📦 RAW BODY:", req.body);
+  console.log("📦 HEADERS:", req.headers["content-type"]);
   res.json({ ok: true });
 });
+
 
 
 app.use((req, res, next) => {
