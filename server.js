@@ -3,6 +3,8 @@ import rateLimit from "express-rate-limit";
 
 import analyticsRoutes from "./routes/analytics.routes.js";
 import clinicPromptRoutes from "./routes/clinicPrompt.routes.js";
+import clinicPromptDashboardRoutes from "./routes/clinicPrompt.dashboard.routes.js";
+
 
 const app = express();
 
@@ -26,7 +28,7 @@ app.use(limiter);
 
 // Routes
 app.use("/v1", clinicPromptRoutes);
-app.use("/v1", clinicPrompt.dashboard.routes.js);
+app.use("/v1", clinicPromptDashboardRoutes);
 app.use("/v1/analytics", analyticsRoutes);
 
 const PORT = process.env.PORT || 3000;
