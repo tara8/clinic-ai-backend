@@ -13,27 +13,24 @@ app.use(express.json());
 
 //webhook route
 app.post("/vapi/webhook", (req, res) => {
-  const body = req.body;
+  const payload = req.body;
 
-  // Normalize event type safely
-  const eventType =
-    body?.type ||
-    body?.event?.type ||
-    body?.call?.type;
+  // Normalize payload to an array
+  const events = Array.isArray(payload) ? payload : [payload];
 
-  console.log("📞 VAPI event type:", eventType);
+  for (const event of events) {
+    const eventType = event?.type;
+    console.log("📞 VAPI event type:", eventType);
 
-  // Only act on call end
-  if (eventType !== "call.ended") {
-    return res.json({ ok: true });
+    if (eventType === "call.ended") {
+      console.log("✅ Call ended event received");
+      // 🔜 SMS trigger logic will go here
+    }
   }
-
-  console.log("✅ Call ended event received");
-
-  // 🔜 SMS logic will go here
 
   res.json({ ok: true });
 });
+
 
 
 //
