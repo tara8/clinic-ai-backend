@@ -4,7 +4,11 @@ import { pool } from "../db.js";
 const router = express.Router();
 
 // 🔒 Minimal safe fallback prompt (SMS-first)
-const DEFAULT_SYSTEM_PROMPT = `
+router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
+  try {
+    const apiKey = req.headers["x-api-key"];
+
+    const DEFAULT_SYSTEM_PROMPT = `
 You are a virtual receptionist.
 
 Your ONLY job is to collect a phone number so the clinic can send a booking link by text message.
@@ -26,11 +30,6 @@ Do NOT ask for appointment details.
 Do NOT mention system issues.
 `;
 
-router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
-  try {
-    const apiKey = req.headers["x-api-key"];
-
-    // Always return a prompt — never reject
     if (apiKey !== process.env.VAPI_API_KEY) {
       return res.json({ system_prompt: DEFAULT_SYSTEM_PROMPT });
     }
@@ -51,6 +50,5 @@ router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
     return res.json({ system_prompt: DEFAULT_SYSTEM_PROMPT });
   }
 });
-
 
 export default router;
