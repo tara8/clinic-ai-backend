@@ -48,10 +48,11 @@ console.log("📦 full artifact:", msg?.artifact);
 
     const transcript = msg?.transcript || "";
     const assistantId = msg?.call?.assistantId;
-    const customerPhone =
-        msg?.call?.customer?.number ||
-        msg?.artifact?.variableValues?.phone ||
-        msg?.artifact?.variableValues?.phoneNumber;
+   const customerPhone =
+  msg?.artifact?.variableValues?.phone_number ||
+  msg?.artifact?.variableValues?.phone ||
+  msg?.artifact?.variableValues?.mobile;
+
 
 
     if (!assistantId || !customerPhone) {
