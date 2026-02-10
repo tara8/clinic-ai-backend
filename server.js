@@ -42,6 +42,9 @@ app.post("/vapi/webhook", async (req, res) => {
     }
 
     console.log("✅ End-of-call report received");
+    console.log("📦 variableValues:", msg?.artifact?.variableValues);
+console.log("📦 full artifact:", msg?.artifact);
+
 
     const transcript = msg?.transcript || "";
     const assistantId = msg?.call?.assistantId;
