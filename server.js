@@ -4,6 +4,8 @@ import rateLimit from "express-rate-limit";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import clinicPromptRoutes from "./routes/clinicPrompt.routes.js";
 import clinicPromptDashboardRoutes from "./routes/clinicPrompt.dashboard.routes.js";
+import { sendBookingSms } from "./utils/sendSms.js";
+import { pool } from "./db.js";
 
 
 const app = express();
@@ -12,30 +14,64 @@ const app = express();
 app.use(express.json());
 
 //webhook route
-app.post("/vapi/webhook", (req, res) => {
-  const msg = req.body?.message;
+app.post("/vapi/webhook", async (req, res) => {
+  try {
+    const msg = req.body?.message;
+    const eventType = msg?.type;
 
-  const eventType = msg?.type;
+    if (eventType !== "end-of-call-report") {
+      return res.json({ ok: true });
+    }
 
-  console.log("📞 VAPI event type:", eventType);
+    console.log("✅ End-of-call report received");
 
-  // This is the ONLY event you want
-  if (eventType !== "end-of-call-report") {
-    return res.json({ ok: true });
+    const transcript = msg?.transcript || "";
+    const assistantId = msg?.call?.assistantId;
+    const customerPhone = msg?.call?.customer?.number;
+
+    if (!assistantId || !customerPhone) {
+      return res.json({ ok: true });
+    }
+
+    // 🔎 Simple booking-intent check (v1)
+    const bookingIntent =
+      /book|appointment|schedule/i.test(transcript);
+
+    if (!bookingIntent) {
+      return res.json({ ok: true });
+    }
+
+    // 🔁 Find clinic by assistantId (or phoneNumberId if you prefer)
+    const { rows } = await pool.query(
+      `
+      SELECT booking_link
+      FROM clinic_config
+      WHERE vapi_assistant_id = $1
+      `,
+      [assistantId]
+    );
+
+    const bookingLink = rows[0]?.booking_link;
+    if (!bookingLink) {
+      return res.json({ ok: true });
+    }
+
+    await sendBookingSms({
+      to: customerPhone,
+      bookingLink,
+      clinicName: "Your Clinic",
+    });
+
+    console.log("📩 Booking SMS sent to", customerPhone);
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error("❌ Webhook SMS error:", err.message);
+    // Never fail a webhook
+    res.json({ ok: true });
   }
-
-  console.log("✅ End-of-call report received");
-
-  // Useful data (you will need this next)
-  const transcript = msg?.transcript;
-  const call = msg?.call;
-  const assistantId = call?.assistantId;
-  const endedReason = msg?.endedReason;
-
-  // 🔜 SMS logic will be added here next
-
-  res.json({ ok: true });
 });
+
 
 
 
