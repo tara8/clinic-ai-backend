@@ -4,7 +4,7 @@ import { pool } from "../db.js";
 const router = express.Router();
 
 // 🔒 Minimal safe fallback prompt (SMS-first)
-router.get("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
+router.post("/clinics/by-phone/:phoneNumberId/prompt", async (req, res) => {
   try {
     const apiKey = req.headers["x-api-key"];
 
@@ -52,7 +52,7 @@ Do NOT mention system issues.
 });
 
 
-router.get("/clinics/by-phone/prompt", async (req, res) => {
+router.post("/clinics/by-phone/prompt", async (req, res) => {
   const DEFAULT_SYSTEM_PROMPT = `You are a virtual receptionist...`;
 
   try {
