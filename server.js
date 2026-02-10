@@ -45,7 +45,11 @@ app.post("/vapi/webhook", async (req, res) => {
 
     const transcript = msg?.transcript || "";
     const assistantId = msg?.call?.assistantId;
-    const customerPhone = msg?.call?.customer?.number;
+    const customerPhone =
+        msg?.call?.customer?.number ||
+        msg?.artifact?.variableValues?.phone ||
+        msg?.artifact?.variableValues?.phoneNumber;
+
 
     if (!assistantId || !customerPhone) {
       return res.json({ ok: true });
