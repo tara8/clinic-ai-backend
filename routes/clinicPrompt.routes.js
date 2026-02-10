@@ -51,4 +51,35 @@ Do NOT mention system issues.
   }
 });
 
+
+router.get("/clinics/by-phone/prompt", async (req, res) => {
+  const DEFAULT_SYSTEM_PROMPT = `You are a virtual receptionist...`;
+
+  try {
+    const apiKey = req.headers["x-api-key"];
+    if (apiKey !== process.env.VAPI_API_KEY) {
+      return res.json({ system_prompt: DEFAULT_SYSTEM_PROMPT });
+    }
+
+    // VAPI sends variables here
+    const phoneNumberId = req.query.phoneNumberId;
+
+    if (!phoneNumberId) {
+      return res.json({ system_prompt: DEFAULT_SYSTEM_PROMPT });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT system_prompt FROM clinic_config WHERE vapi_phone_number_id = $1`,
+      [phoneNumberId]
+    );
+
+    return res.json({
+      system_prompt: rows[0]?.system_prompt || DEFAULT_SYSTEM_PROMPT
+    });
+
+  } catch (err) {
+    return res.json({ system_prompt: DEFAULT_SYSTEM_PROMPT });
+  }
+});
+
 export default router;
